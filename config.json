@@ -1,12 +1,58 @@
 {
   "hotkey": "ctrl+alt+l",
   "items": [
-    {"name": "Clipboard Manager", "type": "app", "target": "C:\\Users\\anshu\\Desktop\\Claude\\clipboard-manager\\run.bat"},
-    {"name": "Space Cleanup", "type": "app", "target": "C:\\Users\\anshu\\Desktop\\Claude\\space-cleanup\\run.bat"},
-    {"name": "Task Watcher", "type": "app", "target": "C:\\Users\\anshu\\Desktop\\Claude\\task-watcher\\run.bat"},
-    {"name": "Focus Timer", "type": "app", "target": "C:\\Users\\anshu\\Desktop\\Claude\\focus-timer\\run.bat"},
-    {"name": "Downloads Sorter", "type": "app", "target": "C:\\Users\\anshu\\Desktop\\Claude\\downloads-sorter\\run.bat"},
-    {"name": "Time Tracker", "type": "app", "target": "C:\\Users\\anshu\\Desktop\\Claude\\time-tracker\\run.bat"},
-    {"name": "Speak Jarvis Briefing", "type": "app", "target": "C:\\Users\\anshu\\Desktop\\Claude\\daily-overview\\speak-now.vbs", "hotkey": "ctrl+alt+j"}
+    {
+      "name": "Clipboard Manager",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\clipboard-manager\\run.bat"
+    },
+    {
+      "name": "Space Cleanup",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\space-cleanup\\run.bat"
+    },
+    {
+      "name": "Task Watcher",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\task-watcher\\run.bat"
+    },
+    {
+      "name": "Focus Timer",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\focus-timer\\run.bat"
+    },
+    {
+      "name": "Downloads Sorter",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\downloads-sorter\\run.bat"
+    },
+    {
+      "name": "Time Tracker",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\time-tracker\\run.bat"
+    },
+    {
+      "name": "Jarvis UI",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\daily-overview\\open-jarvis-ui.vbs",
+      "hotkey": "ctrl+alt+j"
+    },
+    {
+      "name": "Screen Copilot",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\screen-copilot\\assist.vbs",
+      "hotkey": "ctrl+alt+space"
+    },
+    {
+      "name": "PANIC STOP Desktop Control",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\screen-copilot\\panic.vbs",
+      "hotkey": "ctrl+alt+x"
+    },
+    {
+      "name": "Resume Desktop Control",
+      "type": "app",
+      "target": "C:\\Users\\anshu\\Desktop\\Claude\\screen-copilot\\resume.vbs"
+    }
   ]
 }
