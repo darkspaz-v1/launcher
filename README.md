@@ -1,5 +1,7 @@
 # Shortcut Pad
 
+[![CI](https://github.com/darkspaz-v1/launcher/actions/workflows/ci.yml/badge.svg)](https://github.com/darkspaz-v1/launcher/actions/workflows/ci.yml)
+
 One hotkey to reach any app in this suite, or fire a standalone action.
 
 > The folder and the Python identifiers still say `launcher`. The rename to Shortcut Pad was
@@ -8,7 +10,7 @@ One hotkey to reach any app in this suite, or fire a standalone action.
 ## How it works
 
 - **`Ctrl+Alt+L`** opens a borderless palette. Type to filter, Enter to run.
-- Entries come from `config.json`. Each one launches a target — usually another app's `run.bat`, but
+- Entries come from `config.json` (created from `config.example.json` on first run). Each one launches a target — usually another app's `run.bat`, but
   any script or executable works.
 - **An entry can carry its own global hotkey** (optional `hotkey` key), registered by
   `_register_item_hotkeys()` independently of the palette. Those fire the action directly with no
@@ -38,14 +40,32 @@ framework — the only thing they share is a set of conventions.
 | Config lives in `config.json`, read at startup | Edit it, then fully exit the tray icon and relaunch — a running process never re-reads it |
 | Tray icon generated in code (`icon.py`) | No binary asset to keep in sync |
 
-## Running it
+## Install and run
 
 ```
+python -m venv venv
+venv\Scripts\pip install -r requirements.txt
 run.bat
 ```
 
-That creates the virtualenv on first run, installs `requirements.txt`, and starts the app. Windows
-only — these use Win32 APIs and a system tray.
+Windows only: these use Win32 APIs and a system tray. `config.json` holds your own paths and is
+gitignored. On first run the app copies `config.example.json` to `config.json`. Targets may use
+environment variables such as `%USERPROFILE%`, which are expanded when the palette opens.
+
+Two entries that share a hotkey (or an entry that reuses the palette hotkey) are a conflict: the
+palette hotkey wins, then the first item listed, and the rest are skipped with a warning in the log.
+
+## Tests
+
+```
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+## Troubleshooting
+
+The app runs under `pythonw`, so there is no console. Launch and hotkey failures are logged to
+`logs/launcher.log` (rotating, next to `app.py`). A crash at startup is written to `app_error.log`.
 
 ## License
 
