@@ -133,7 +133,7 @@ def test_shipped_example_config_is_valid_and_portable():
     assert data["hotkey"] and data["items"]
     for it in data["items"]:
         assert {"name", "type", "target"} <= it.keys()
-        assert "Users\\anshu" not in it["target"] and it["target"].startswith("%USERPROFILE%")
+        assert it["target"].startswith("%USERPROFILE%")  # no drive-letter or user-specific path
 
 
 def test_shipped_example_has_no_hotkey_conflicts():
