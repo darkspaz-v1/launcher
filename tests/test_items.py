@@ -40,6 +40,19 @@ def test_build_items_empty_and_missing_items_key():
     assert items.build_items({"items": []}) == []
 
 
+def test_build_items_skips_non_dict_entries_instead_of_crashing():
+    cfg = {"items": [
+        "not-a-dict",
+        42,
+        None,
+        ["nested", "list"],
+        {"name": "ok", "type": "app", "target": "a.exe"},
+    ]}
+    # A malformed entry (string/number/None/list instead of an object) must never take down
+    # the whole palette - it's skipped, and the well-formed entries around it still load.
+    assert [i["name"] for i in items.build_items(cfg)] == ["ok"]
+
+
 def test_build_items_keeps_extra_keys_and_does_not_mutate_config():
     cfg = {"items": [item("Jarvis", hotkey="ctrl+alt+j", target="%USERPROFILE%\\j.vbs")]}
     built = items.build_items(cfg)
@@ -121,6 +134,20 @@ def test_ensure_config_reports_whether_it_copied(tmp_path):
     write_json(tmp_path / "config.example.json", {})
     assert items.ensure_config(tmp_path / "config.json", tmp_path / "config.example.json") is True
     assert items.ensure_config(tmp_path / "config.json", tmp_path / "config.example.json") is False
+
+
+def test_load_config_raises_clear_error_on_malformed_json(tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text("{not valid json,,,", encoding="utf-8")
+    with pytest.raises(items.ConfigError, match=r"config\.json.*not valid JSON"):
+        items.load_config(config_path, tmp_path / "config.example.json")
+
+
+def test_load_config_raises_clear_error_when_json_is_not_an_object(tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text("[1, 2, 3]", encoding="utf-8")
+    with pytest.raises(items.ConfigError, match="must contain a JSON object"):
+        items.load_config(config_path, tmp_path / "config.example.json")
 
 
 def test_ensure_config_without_example_does_nothing(tmp_path):

@@ -6,6 +6,12 @@ from pathlib import Path
 
 log = logging.getLogger("launcher")
 
+
+class ConfigError(Exception):
+    """Raised when config.json exists but cannot be used, with a message meant to be read
+    by the person who has to go fix the file - not a raw traceback."""
+
+
 APP_DIR = Path(__file__).parent
 CONFIG_PATH = APP_DIR / "config.json"
 EXAMPLE_CONFIG_PATH = APP_DIR / "config.example.json"
@@ -41,9 +47,22 @@ def load_config(config_path=None, example_path=None):
     config = dict(DEFAULT_CONFIG)
     try:
         with open(config_path, "r", encoding="utf-8") as f:
-            config.update(json.load(f))
+            text = f.read()
     except FileNotFoundError:
-        pass  # no config and no example: run with an empty palette
+        return config  # no config and no example: run with an empty palette
+    try:
+        loaded = json.loads(text)
+    except json.JSONDecodeError as e:
+        raise ConfigError(
+            f"{config_path} is not valid JSON ({e.msg} at line {e.lineno}, column {e.colno}). "
+            "Fix the syntax error, or delete the file to regenerate it from config.example.json."
+        ) from e
+    if not isinstance(loaded, dict):
+        raise ConfigError(
+            f"{config_path} must contain a JSON object with \"hotkey\" and \"items\", "
+            f"not a {type(loaded).__name__}."
+        )
+    config.update(loaded)
     return config
 
 
@@ -59,6 +78,10 @@ def build_items(config):
     """Only what's explicitly listed in config.json - no Start Menu scanning."""
     items = []
     for entry in config.get("items", []):
+        if not isinstance(entry, dict):
+            log.warning("skipping malformed item in config.json: expected an object, got %s: %r",
+                        type(entry).__name__, entry)
+            continue
         if {"name", "type", "target"} <= entry.keys():
             item = dict(entry)
             item["target"] = expand_target(item["target"], item.get("type"))
