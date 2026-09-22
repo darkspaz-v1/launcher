@@ -4,6 +4,8 @@
 
 One hotkey to reach any app in this suite, or fire a standalone action.
 
+![Shortcut Pad's borderless palette open over the desktop, showing a filtered list of launchable items with one highlighted](docs/media/screenshot.png)
+
 > The folder and the Python identifiers still say `launcher`. The rename to Shortcut Pad was
 > deliberately display-only, to avoid path and import churn for a cosmetic change.
 
@@ -40,7 +42,7 @@ framework — the only thing they share is a set of conventions.
 | Config lives in `config.json`, read at startup | Edit it, then fully exit the tray icon and relaunch — a running process never re-reads it |
 | Tray icon generated in code (`icon.py`) | No binary asset to keep in sync |
 
-## Install and run
+## Quick start
 
 ```
 python -m venv venv
@@ -54,6 +56,17 @@ environment variables such as `%USERPROFILE%`, which are expanded when the palet
 
 Two entries that share a hotkey (or an entry that reuses the palette hotkey) are a conflict: the
 palette hotkey wins, then the first item listed, and the rest are skipped with a warning in the log.
+
+## Known limitations
+
+- **Windows only.** The tray icon, global hotkeys, and `run.bat` all depend on Win32 APIs; there is
+  no macOS or Linux build.
+- **Hotkeys are global**, registered system-wide via the `keyboard` library. They can conflict with
+  hotkeys other running apps already claim (see the `Ctrl+Alt+Space` note above) — the OS gives no
+  warning, the keypress just does whatever registered first.
+- **`config.json` must exist to have anything to launch.** The app creates it from
+  `config.example.json` on first run, but on a read-only install directory that copy can silently
+  fail (logged, not fatal) and the palette opens empty until you create the file yourself.
 
 ## Tests
 
