@@ -1,8 +1,10 @@
+import logging
 import msvcrt
 import queue
 import threading
 import time
 import tkinter as tk
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 import keyboard
@@ -10,13 +12,30 @@ import pystray
 from PIL import ImageTk
 
 from icon import app_icon
-from items import build_items, load_config
+from items import build_items, load_config, plan_item_hotkeys
 from launcher_actions import launch_item
 from palette import LauncherPalette
 
 APP_DIR = Path(__file__).parent
 LOCK_PATH = APP_DIR / ".singleton.lock"
+LOG_DIR = APP_DIR / "logs"
 _lock_file = None
+
+log = logging.getLogger("launcher")
+
+
+def setup_logging():
+    """Log to logs/launcher.log (rotating). Under pythonw there is no console, so print() output
+    used to vanish; this file is where hotkey and launch failures show up now."""
+    try:
+        LOG_DIR.mkdir(exist_ok=True)
+        handler = RotatingFileHandler(LOG_DIR / "launcher.log", maxBytes=256 * 1024,
+                                      backupCount=3, encoding="utf-8")
+    except OSError:
+        return  # read-only folder: run without a log file rather than fail to start
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
 
 
 def _acquire_single_instance_lock():
@@ -75,8 +94,8 @@ class LauncherApp:
     def _on_select(self, item):
         try:
             launch_item(item)
-        except Exception as e:
-            print(f"Launch failed for {item.get('name')}: {e}")
+        except Exception:  # noqa: BLE001 - a bad target must never take down the tray app
+            log.exception("Launch failed for %s", item.get("name"))
 
     def show_palette(self):
         self._post(self.palette.show)
@@ -85,13 +104,13 @@ class LauncherApp:
         self._stop.set()
         try:
             keyboard.remove_hotkey(self.config["hotkey"])
-        except Exception:
-            pass
+        except KeyError:
+            log.debug("palette hotkey %s was not registered", self.config["hotkey"])
         for hk in self._item_hotkeys:
             try:
                 keyboard.remove_hotkey(hk)
-            except Exception:
-                pass
+            except KeyError:
+                log.debug("item hotkey %s was not registered", hk)
         if self.icon:
             self.icon.stop()
         self._post(self.root.quit)
@@ -101,19 +120,19 @@ class LauncherApp:
         # (os.startfile / webbrowser.open), never Tk, so no _post() needed here.
         try:
             launch_item(item)
-        except Exception as e:
-            print(f"Hotkey launch failed for {item.get('name')}: {e}")
+        except Exception:  # noqa: BLE001 - runs on the keyboard-hook thread; must not kill it
+            log.exception("Hotkey launch failed for %s", item.get("name"))
 
     def _register_item_hotkeys(self):
-        for item in self._get_items():
-            hk = item.get("hotkey")
-            if not hk or hk == self.config.get("hotkey"):
-                continue
+        to_register, conflicts = plan_item_hotkeys(self._get_items(), self.config.get("hotkey"))
+        for msg in conflicts:
+            log.warning("hotkey conflict - %s", msg)
+        for hk, item in to_register:
             try:
                 keyboard.add_hotkey(hk, self._run_item, args=(item,))
                 self._item_hotkeys.append(hk)
-            except Exception as e:
-                print(f"Warning: could not register hotkey {hk} for {item.get('name')}: {e}")
+            except Exception as e:  # noqa: BLE001 - the keyboard lib raises assorted types; a bad hotkey must not stop the tray app
+                log.warning("could not register hotkey %s for %s: %s", hk, item.get("name"), e)
 
     def run(self):
         menu = pystray.Menu(
@@ -129,8 +148,8 @@ class LauncherApp:
 
         try:
             keyboard.add_hotkey(self.config["hotkey"], self.show_palette)
-        except Exception as e:
-            print(f"Warning: could not register hotkey {self.config['hotkey']}: {e}")
+        except Exception as e:  # noqa: BLE001 - the keyboard lib raises assorted types; a bad hotkey must not stop the tray app
+            log.warning("could not register hotkey %s: %s", self.config["hotkey"], e)
 
         self._register_item_hotkeys()
 
@@ -138,6 +157,7 @@ class LauncherApp:
 
 
 def main():
+    setup_logging()
     if not _acquire_single_instance_lock():
         return
     app = LauncherApp()

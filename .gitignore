@@ -2,3 +2,8 @@ venv/
 __pycache__/
 *.pyc
 *.lock
+config.json
+logs/
+app_error.log
+.pytest_cache/
+.ruff_cache/
