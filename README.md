@@ -4,6 +4,8 @@
 
 One hotkey to reach any app in this suite, or fire a standalone action.
 
+![Shortcut Pad preview](docs/images/launcher-preview.png)
+
 ![Shortcut Pad's borderless palette open over the desktop, showing a filtered list of launchable items with one highlighted](docs/media/screenshot.png)
 
 > The folder and the Python identifiers still say `launcher`. The rename to Shortcut Pad was
